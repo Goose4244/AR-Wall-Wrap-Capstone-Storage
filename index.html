@@ -4,12 +4,35 @@
     <title>Our AR Map Prototype</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      /* Simple overlay to force a user gesture */
+      #overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      button {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+    </style>
   </head>
+
   <body style="margin: 0; overflow: hidden;">
+    
+    <div id="overlay">
+      <button id="startButton">Start AR Experience</button>
+    </div>
+
     <a-scene 
       embedded 
       vr-mode-ui="enabled: false;"
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+      arjs="sourceType: webcam; debugUIEnabled: false;">
 
       <a-assets>
         <img id="mapImage" src="assets/testARimage.jpeg">
@@ -23,17 +46,24 @@
           width="2" 
           height="2">
         </a-image>
-
-        <a-text 
-          value="Tap for Info" 
-          position="0 0.1 0.8" 
-          rotation="-90 0 0" 
-          align="center" 
-          color="#FFF">
-        </a-text>
+        <a-text value="Tap for Info" position="0 0.1 0.8" rotation="-90 0 0" align="center"></a-text>
       </a-marker>
       
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      const scene = document.querySelector('a-scene');
+      const button = document.querySelector('#startButton');
+      const overlay = document.querySelector('#overlay');
+
+      button.addEventListener('click', () => {
+        // This 'wakes up' the audio/video context on iOS
+        overlay.style.display = 'none';
+        
+        // Optional: Force a resize to ensure the camera fills the screen
+        window.dispatchEvent(new Event('resize'));
+      });
+    </script>
   </body>
 </html>
