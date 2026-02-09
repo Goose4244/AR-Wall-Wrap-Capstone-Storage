@@ -6,11 +6,12 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <script>
-      // 1. REGISTER COMPONENTS FIRST (In the Head)
       AFRAME.registerComponent('marker-handler', {
         init: function () {
           const panel = document.querySelector('#infoPanel');
+          // Adding a console log helps you debug on a computer!
           this.el.addEventListener('click', () => {
+            console.log("Marker clicked!");
             const isVisible = panel.getAttribute('visible');
             panel.setAttribute('visible', !isVisible);
           });
@@ -31,13 +32,11 @@
       button {
         padding: 15px 30px;
         font-size: 1.2rem;
-        cursor: pointer;
       }
     </style>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    
     <div id="overlay">
       <button id="startButton">Start AR Experience</button>
     </div>
@@ -45,9 +44,7 @@
     <a-scene 
       embedded 
       vr-mode-ui="enabled: false;"
-      arjs="sourceType: webcam; debugUIEnabled: false;"
-      cursor="rayOrigin: mouse"
-      raycaster="objects: .clickable">
+      arjs="sourceType: webcam; debugUIEnabled: false;">
 
       <a-assets>
         <img id="mapImage" src="assets/testARimage.jpeg">
@@ -56,13 +53,7 @@
       </a-assets>
 
       <a-marker preset="hiro">
-        <a-image 
-          src="#mapImage"
-          position="0 0 0"
-          rotation="-90 0 0"
-          width="2"
-          height="2">
-        </a-image>
+        <a-image src="#mapImage" position="0 0 0" rotation="-90 0 0" width="2" height="2"></a-image>
 
         <a-image
           id="mapMarker"
@@ -86,18 +77,18 @@
         </a-image>
       </a-marker>
 
-      <a-entity camera></a-entity>
-
+      <a-entity camera>
+        <a-entity cursor="fuse: false; rayOrigin: mouse;"
+                  raycaster="objects: .clickable">
+        </a-entity>
+      </a-entity>
     </a-scene>
 
     <script>
-      // 2. UI HANDLERS LAST
       const button = document.querySelector('#startButton');
       const overlay = document.querySelector('#overlay');
-    
       button.addEventListener('click', () => {
         overlay.style.display = 'none';
-        // iOS requires this to kickstart the camera feed sometimes
         window.dispatchEvent(new Event('resize'));
       });
     </script>
