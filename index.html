@@ -19,35 +19,42 @@
         }
       });
 
-      /* ---------- Marker Lock Component ---------- */
+      /* ---------- Soft Marker Lock ---------- */
       AFRAME.registerComponent('marker-lock', {
         init: function () {
-          const marker = this.el;
-          const worldRoot = document.querySelector('#worldRoot');
-          let locked = false;
+          this.worldRoot = document.querySelector('#worldRoot');
+          this.lastPos = new THREE.Vector3();
+          this.lastQuat = new THREE.Quaternion();
+          this.hasPose = false;
 
-          marker.addEventListener('markerFound', () => {
-            if (locked) return;
-
-            console.log("Marker found — locking scene.");
-
-            // Copy marker world transform
-            marker.object3D.updateMatrixWorld();
-
-            const pos = new THREE.Vector3();
-            const quat = new THREE.Quaternion();
-
-            marker.object3D.getWorldPosition(pos);
-            marker.object3D.getWorldQuaternion(quat);
-
-            worldRoot.object3D.position.copy(pos);
-            worldRoot.object3D.quaternion.copy(quat);
-            worldRoot.object3D.scale.copy(marker.object3D.scale);
-
-            worldRoot.setAttribute("visible", true);
-
-            locked = true;
+          this.el.addEventListener('markerFound', () => {
+            console.log("Marker found");
+            this.worldRoot.setAttribute("visible", true);
           });
+
+          this.el.addEventListener('markerLost', () => {
+            console.log("Marker lost — freezing pose");
+          });
+        },
+
+        tick: function () {
+          const markerObj = this.el.object3D;
+
+          if (markerObj.visible) {
+            markerObj.updateMatrixWorld();
+
+            markerObj.getWorldPosition(this.lastPos);
+            markerObj.getWorldQuaternion(this.lastQuat);
+
+            this.worldRoot.object3D.position.copy(this.lastPos);
+            this.worldRoot.object3D.quaternion.copy(this.lastQuat);
+
+            this.hasPose = true;
+          }
+          else if (this.hasPose) {
+            this.worldRoot.object3D.position.copy(this.lastPos);
+            this.worldRoot.object3D.quaternion.copy(this.lastQuat);
+          }
         }
       });
     </script>
@@ -86,15 +93,12 @@
         <img id="infoImage" src="assets/infoImage.jpg">
       </a-assets>
 
-      <!-- Hiro marker only used for initial placement -->
+      <!-- Hiro marker -->
       <a-marker preset="hiro" marker-lock>
-
-        <!-- invisible placeholder for alignment -->
         <a-entity position="0 0 0"></a-entity>
-
       </a-marker>
 
-      <!-- WORLD CONTENT (independent after lock) -->
+      <!-- WORLD CONTENT -->
       <a-entity id="worldRoot" visible="false">
 
         <a-image
@@ -128,7 +132,6 @@
 
       </a-entity>
 
-      <!-- Camera + cursor -->
       <a-entity camera>
         <a-entity cursor="fuse: false; rayOrigin: mouse;"
                   raycaster="objects: .clickable">
