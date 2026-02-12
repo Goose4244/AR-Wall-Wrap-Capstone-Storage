@@ -19,39 +19,38 @@
         }
       });
 
-      /* ---------- Soft Marker Lock ---------- */
+      /* ---------- Soft Marker Lock (with unlock) ---------- */
       AFRAME.registerComponent('marker-lock', {
         init: function () {
           this.worldRoot = document.querySelector('#worldRoot');
+
           this.lastPos = new THREE.Vector3();
           this.lastQuat = new THREE.Quaternion();
-          this.hasPose = false;
+
+          this.following = false;
 
           this.el.addEventListener('markerFound', () => {
-            console.log("Marker found");
+            console.log("Marker found — resuming tracking");
             this.worldRoot.setAttribute("visible", true);
+            this.following = true;
           });
 
           this.el.addEventListener('markerLost', () => {
-            console.log("Marker lost — freezing pose");
+            console.log("Marker lost — freezing scene");
+            this.following = false;
           });
         },
 
         tick: function () {
           const markerObj = this.el.object3D;
 
-          if (markerObj.visible) {
+          // Follow marker when visible
+          if (this.following && markerObj.visible) {
             markerObj.updateMatrixWorld();
 
             markerObj.getWorldPosition(this.lastPos);
             markerObj.getWorldQuaternion(this.lastQuat);
 
-            this.worldRoot.object3D.position.copy(this.lastPos);
-            this.worldRoot.object3D.quaternion.copy(this.lastQuat);
-
-            this.hasPose = true;
-          }
-          else if (this.hasPose) {
             this.worldRoot.object3D.position.copy(this.lastPos);
             this.worldRoot.object3D.quaternion.copy(this.lastQuat);
           }
