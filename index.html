@@ -1,152 +1,117 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Our AR Map Prototype</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<head>
+  <title>Our AR Map Prototype</title>
 
-    <script>
-      /* ---------- Marker Interaction ---------- */
-      AFRAME.registerComponent('marker-handler', {
-        init: function () {
-          const panel = document.querySelector('#infoPanel');
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-          this.el.addEventListener('click', () => {
-            console.log("Marker clicked!");
-            const isVisible = panel.getAttribute('visible');
-            panel.setAttribute('visible', !isVisible);
-          });
-        }
-      });
+  <!-- MindAR WebAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-      /* ---------- Soft Marker Lock (with unlock) ---------- */
-      AFRAME.registerComponent('marker-lock', {
-        init: function () {
-          this.worldRoot = document.querySelector('#worldRoot');
+  <script>
+    /* ---------- Marker Interaction ---------- */
+    AFRAME.registerComponent('marker-handler', {
+      init: function () {
+        const panel = document.querySelector('#infoPanel');
 
-          this.lastPos = new THREE.Vector3();
-          this.lastQuat = new THREE.Quaternion();
-
-          this.following = false;
-
-          this.el.addEventListener('markerFound', () => {
-            console.log("Marker found — resuming tracking");
-            this.worldRoot.setAttribute("visible", true);
-            this.following = true;
-          });
-
-          this.el.addEventListener('markerLost', () => {
-            console.log("Marker lost — freezing scene");
-            this.following = false;
-          });
-        },
-
-        tick: function () {
-          const markerObj = this.el.object3D;
-
-          // Follow marker when visible
-          if (this.following && markerObj.visible) {
-            markerObj.updateMatrixWorld();
-
-            markerObj.getWorldPosition(this.lastPos);
-            markerObj.getWorldQuaternion(this.lastQuat);
-
-            this.worldRoot.object3D.position.copy(this.lastPos);
-            this.worldRoot.object3D.quaternion.copy(this.lastQuat);
-          }
-        }
-      });
-    </script>
-
-    <style>
-      #overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        this.el.addEventListener('click', () => {
+          const isVisible = panel.getAttribute('visible');
+          panel.setAttribute('visible', !isVisible);
+        });
       }
+    });
+  </script>
 
-      button {
-        padding: 15px 30px;
-        font-size: 1.2rem;
-      }
-    </style>
-  </head>
+  <style>
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-  <body style="margin: 0; overflow: hidden;">
-    <div id="overlay">
-      <button id="startButton">Start AR Experience</button>
-    </div>
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
 
-    <a-scene 
-      embedded 
-      vr-mode-ui="enabled: false;"
-      arjs="sourceType: webcam; debugUIEnabled: false;">
+<body style="margin: 0; overflow: hidden;">
 
-      <a-assets>
-        <img id="mapImage" src="Keystone Wall Wrap Old Photos/LakeMapRecAreas.jpg">
-        <img id="markerImage" src="assets/marker.png">
-        <img id="infoImage" src="assets/infoImage.jpg">
-      </a-assets>
+<div id="overlay">
+  <button id="startButton">Start AR Experience</button>
+</div>
 
-      <!-- Hiro marker -->
-      <a-marker preset="hiro" marker-lock>
-        <a-entity position="0 0 0"></a-entity>
-      </a-marker>
+<a-scene
+  mindar-image="imageTargetSrc: targets.mind;"
+  embedded
+  vr-mode-ui="enabled: false;"
+  device-orientation-permission-ui="enabled: false">
 
-      <!-- WORLD CONTENT -->
-      <a-entity id="worldRoot" visible="false">
+  <a-assets>
+    <img id="mapImage" src="Keystone Wall Wrap Old Photos/LakeMapRecAreas.jpg">
+    <img id="markerImage" src="assets/marker.png">
+    <img id="infoImage" src="assets/infoImage.jpg">
+  </a-assets>
 
-        <a-image
-          src="#mapImage"
-          position="0 0 0"
-          rotation="-90 0 0"
-          width="4"
-          height="4">
-        </a-image>
+  <!-- Image Target -->
+  <a-entity mindar-image-target="targetIndex: 0">
 
-        <a-image
-          id="mapMarker"
-          class="clickable"
-          marker-handler
-          src="#markerImage"
-          position="0.5 0.1 0.3"
-          rotation="-90 0 0"
-          width="0.7"
-          height="0.7">
-        </a-image>
+    <a-image
+      src="#mapImage"
+      position="0 0 0"
+      rotation="-90 0 0"
+      width="4"
+      height="4">
+    </a-image>
 
-        <a-image
-          id="infoPanel"
-          src="#infoImage"
-          position="0 0.6 0"
-          rotation="-90 0 0"
-          width="1.5"
-          height="1"
-          visible="false">
-        </a-image>
+    <a-image
+      id="mapMarker"
+      class="clickable"
+      marker-handler
+      src="#markerImage"
+      position="0.5 0.1 0.3"
+      rotation="-90 0 0"
+      width="0.7"
+      height="0.7">
+    </a-image>
 
-      </a-entity>
+    <a-image
+      id="infoPanel"
+      src="#infoImage"
+      position="0 0.6 0"
+      rotation="-90 0 0"
+      width="1.5"
+      height="1"
+      visible="false">
+    </a-image>
 
-      <a-entity camera>
-        <a-entity cursor="fuse: false; rayOrigin: mouse;"
-                  raycaster="objects: .clickable">
-        </a-entity>
-      </a-entity>
+  </a-entity>
 
-    </a-scene>
+  <a-camera position="0 0 0">
+    <a-entity
+      cursor="fuse: false; rayOrigin: mouse;"
+      raycaster="objects: .clickable">
+    </a-entity>
+  </a-camera>
 
-    <script>
-      const button = document.querySelector('#startButton');
-      const overlay = document.querySelector('#overlay');
+</a-scene>
 
-      button.addEventListener('click', () => {
-        overlay.style.display = 'none';
-        window.dispatchEvent(new Event('resize'));
-      });
-    </script>
-  </body>
+<script>
+  const button = document.querySelector('#startButton');
+  const overlay = document.querySelector('#overlay');
+
+  button.addEventListener('click', () => {
+    overlay.style.display = 'none';
+    window.dispatchEvent(new Event('resize'));
+  });
+</script>
+
+</body>
 </html>
