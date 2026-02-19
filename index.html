@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AR Wall Prototype: Transparent Anchor</title>
+  <title>AR Wall Prototype: Diagnostic Version</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -19,17 +19,18 @@
 
 <div id="overlay">
   <button id="startButton">Start AR Experience</button>
-  <div id="instructions">Scan the poster to find markers.<br>Walk closer to a marker to see its info.</div>
+  <div id="instructions">Point at the poster.<br>If info doesn't appear, check for error popups.</div>
 </div>
 
 <a-scene
   mindar-image="imageTargetSrc: target_with_sub.mind; filterMinCF: 0.0001; filterBeta: 0.001; warmupTolerance: 5; missTolerance: 5;"
   vr-mode-ui="enabled: false;"
-  device-orientation-permission-ui="enabled: false">
+  device-orientation-permission-ui="enabled: false"
+  renderer="colorManagement: false; logarithmicDepthBuffer: true;">
 
   <a-assets>
-    <img id="markerImage" src="assets/marker.png">
-    <img id="infoImage" src="assets/infoImage.png">
+    <img id="markerImage" src="assets/marker.png" crossorigin="anonymous">
+    <img id="infoImage" src="assets/infoImage.png" crossorigin="anonymous">
   </a-assets>
 
   <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -37,23 +38,36 @@
   <a-entity mindar-image-target="targetIndex: 0">
     <a-image src="#markerImage" 
              position="0.3 0.2 0.1" 
-             width="0.15" height="0.15" 
+             width="0.15" height="0.15"
+             material="shader: flat;"
              animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
     </a-image>
   </a-entity>
 
-
   <a-entity mindar-image-target="targetIndex: 1">
     <a-entity position="0 0 0.15">
-        <a-image src="#infoImage" width="0.7" height="0.5" material="shader: flat; transparent: true"></a-image>
         
-        <a-plane color="#000" opacity="0.5" width="0.75" height="0.55" position="0 0 -0.01"></a-plane>
+        <a-plane color="red" width="0.72" height="0.52" position="0 0 -0.01" material="shader: flat;"></a-plane>
+
+        <a-image src="#infoImage" 
+                 width="0.7" height="0.5" 
+                 material="shader: flat; transparent: true; opacity: 1;">
+        </a-image>
+        
+        <a-plane color="#000" opacity="0.5" width="0.75" height="0.55" position="0 0 -0.02" material="shader: flat;"></a-plane>
     </a-entity>
   </a-entity>
 
 </a-scene>
 
 <script>
+  // FAIL TO LOAD MESSAGE SCRIPT
+  const infoImg = document.querySelector('#infoImage');
+  
+  infoImg.addEventListener('error', function() {
+    alert("CRITICAL ERROR: 'assets/infoImage.png' could not be loaded. Please check that the file name and folder path are correct (case-sensitive).");
+  });
+
   const button = document.querySelector('#startButton');
   const overlay = document.querySelector('#overlay');
   
