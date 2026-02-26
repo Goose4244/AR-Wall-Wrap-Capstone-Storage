@@ -82,9 +82,9 @@
 
     <div id="confirmOverlay">
         <div class="modal-box">
-            <h2>Activity Found!</h2>
-            <p>Would you like to open the activity website?</p>
-            <button id="yesBtn">Open Activity</button>
+            <h2>Keystone Lake: Bull Creek Boat Ramp</h2>
+            <p>Would you like to go to the page for the Bull Creek Boat Ramp?</p>
+            <button id="yesBtn">Open Page</button>
             <button id="noBtn">Not Now</button>
         </div>
     </div>
@@ -117,7 +117,7 @@
 
     <script>
         let hasTriggered = false;
-        const websiteURL = "https://your-activity-site.com"; // CHANGE THIS
+        const websiteURL = "https://www.recreation.gov/activitypass/AP22376"; //Bull Creek Boat Ramp Website Link for KSL
 
         const startButton = document.querySelector('#startButton');
         const overlay = document.querySelector('#overlay');
@@ -146,7 +146,7 @@
         // Optional: Reset trigger when user walks away so they can re-trigger it
         subTarget.addEventListener('targetLost', () => {
             // Uncomment the line below if you want the popup to reappear every time they walk up to it
-            // hasTriggered = false; 
+            hasTriggered = false; 
         });
 
         /* 3. Confirmation Buttons (User Interaction for Safari) */
