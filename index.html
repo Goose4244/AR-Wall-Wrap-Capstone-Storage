@@ -12,18 +12,34 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <script>
-    /* ---------- Marker Interaction ---------- */
-    AFRAME.registerComponent('marker-handler', {
-      init: function () {
-        const panel = document.querySelector('#infoPanel');
+let activityWindow = null; // global reference
 
-        this.el.addEventListener('click', () => {
-          const isVisible = panel.getAttribute('visible');
-          panel.setAttribute('visible', !isVisible);
-        });
+AFRAME.registerComponent('auto-redirect', {
+  schema: { url: { type: 'string' } },
+
+  init: function () {
+    this.hasTriggered = false;
+
+    this.el.addEventListener('targetFound', () => {
+      if (this.hasTriggered) return;
+
+      console.log("Sub-target recognized — loading website");
+
+      this.hasTriggered = true;
+
+      if (activityWindow && !activityWindow.closed) {
+        activityWindow.location.href = this.data.url;
+      } else {
+        console.warn("No pre-opened window available.");
       }
     });
-  </script>
+
+    this.el.addEventListener('targetLost', () => {
+      this.hasTriggered = false;
+    });
+  }
+});
+</script>
 
   <style>
     #overlay {
@@ -91,7 +107,6 @@
     <a-image
     id="mapMarker"
     class="clickable"
-    marker-handler
     src="#markerImage"
     position="0.3 0.2 0.1"
     rotation="0 0 0"
@@ -110,6 +125,12 @@
     </a-image>
   </a-entity>
 
+  <!-- Sub target -->
+  <a-entity 
+    mindar-image-target="targetIndex: 1"
+    auto-redirect="url: https://your-activity-site.com;">
+  </a-entity>
+
   <a-camera position="0 0 0">
     <a-entity
       cursor="fuse: false; rayOrigin: mouse;"
@@ -120,13 +141,17 @@
 </a-scene>
 
 <script>
-  const button = document.querySelector('#startButton');
-  const overlay = document.querySelector('#overlay');
+const button = document.querySelector('#startButton');
+const overlay = document.querySelector('#overlay');
 
-  button.addEventListener('click', () => {
-    overlay.style.display = 'none';
-    window.dispatchEvent(new Event('resize'));
-  });
+button.addEventListener('click', () => {
+  overlay.style.display = 'none';
+
+  // Pre-open blank tab (Safari-safe)
+  activityWindow = window.open('', '_blank');
+
+  window.dispatchEvent(new Event('resize'));
+});
 </script>
 
 </body>
