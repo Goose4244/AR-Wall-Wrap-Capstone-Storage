@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AR Wall Prototype: Diagnostic Version</title>
+    <title>AR Wall Prototype: Website Trigger Version</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        #overlay { 
+        #overlay, #confirmOverlay { 
             position: fixed; 
             top: 0; 
             left: 0; 
@@ -23,6 +23,12 @@
             color: white; 
             font-family: sans-serif; 
         }
+
+        #confirmOverlay {
+            display: none;
+            z-index: 10000;
+        }
+
         button { 
             padding: 15px 30px; 
             font-size: 1.2rem; 
@@ -32,13 +38,16 @@
             background: #FFD700; 
             color: #333; 
             font-weight: bold; 
+            margin: 10px;
         }
+
         #instructions { 
             margin-top: 20px; 
             text-align: center; 
             max-width: 80%; 
             line-height: 1.4; 
         }
+
         html, body { 
             margin: 0; 
             height: 100%; 
@@ -49,9 +58,22 @@
 
 <body>
 
+    <!-- Start Overlay -->
     <div id="overlay">
         <button id="startButton">Start AR Experience</button>
-        <div id="instructions">Point at the poster.<br>If info doesn't appear, check for error popups.</div>
+        <div id="instructions">
+            Point at the poster.<br>
+            Sub-target recognition will prompt website launch.
+        </div>
+    </div>
+
+    <!-- Confirmation Overlay -->
+    <div id="confirmOverlay">
+        <div style="text-align:center;">
+            <h2>Open Activity Website?</h2>
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
     </div>
 
     <a-scene
@@ -62,11 +84,11 @@
 
         <a-assets>
             <img id="markerImage" src="assets/marker.png" crossorigin="anonymous">
-            <img id="infoImage" src="assets/infoImage.jpg" crossorigin="anonymous">
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+        <!-- Main Target -->
         <a-entity mindar-image-target="targetIndex: 0">
             <a-image 
                 src="#markerImage" 
@@ -77,39 +99,74 @@
             </a-image>
         </a-entity>
 
-        <a-entity mindar-image-target="targetIndex: 1">
-            <a-entity position="0 0 0.15">
-                <a-plane color="red" width="0.72" height="0.52" position="0 0 -0.01" material="shader: flat;"></a-plane>
-
-                <a-image 
-                    src="#infoImage" 
-                    width="0.7" height="0.5" 
-                    material="shader: flat; transparent: true; opacity: 1;">
-                </a-image>
-
-                <a-plane color="#000" opacity="0.5" width="0.75" height="0.55" position="0 0 -0.02" material="shader: flat;"></a-plane>
-            </a-entity>
+        <!-- Sub Target (Website Trigger) -->
+        <a-entity 
+            id="subTarget"
+            mindar-image-target="targetIndex: 1">
         </a-entity>
 
     </a-scene>
 
     <script>
-        // FAIL TO LOAD MESSAGE SCRIPT
-        const infoImg = document.querySelector('#infoImage');
 
-        infoImg.addEventListener('error', function() {
-            alert("CRITICAL ERROR: 'assets/infoImage.png' could not be loaded. Please check that the file name and folder path are correct (case-sensitive).");
-        });
+        let activityWindow = null;
+        let hasTriggered = false;
+        const websiteURL = "https://your-activity-site.com"; // CHANGE THIS
 
         const button = document.querySelector('#startButton');
         const overlay = document.querySelector('#overlay');
+        const confirmOverlay = document.querySelector('#confirmOverlay');
+        const yesBtn = document.querySelector('#yesBtn');
+        const noBtn = document.querySelector('#noBtn');
+        const subTarget = document.querySelector('#subTarget');
 
+        /* Start Button Logic */
         button.addEventListener('click', () => {
+
             overlay.style.display = 'none';
+
+            // Pre-open blank tab (Safari-safe)
+            activityWindow = window.open('', '_blank');
+
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
             }, 100);
         });
+
+        /* Sub-target Recognition */
+        subTarget.addEventListener('targetFound', () => {
+            if (hasTriggered) return;
+
+            hasTriggered = true;
+            confirmOverlay.style.display = 'flex';
+        });
+
+        subTarget.addEventListener('targetLost', () => {
+            hasTriggered = false;
+        });
+
+        /* Confirmation Buttons */
+
+        yesBtn.addEventListener('click', () => {
+
+            confirmOverlay.style.display = 'none';
+
+            if (activityWindow && !activityWindow.closed) {
+                activityWindow.location.href = websiteURL;
+                activityWindow.focus();
+            } else {
+                // Fallback if tab was closed
+                window.open(websiteURL, '_blank');
+            }
+
+            hasTriggered = false; // Allow retrigger
+        });
+
+        noBtn.addEventListener('click', () => {
+            confirmOverlay.style.display = 'none';
+            hasTriggered = false; // Allow retrigger
+        });
+
     </script>
 
 </body>
