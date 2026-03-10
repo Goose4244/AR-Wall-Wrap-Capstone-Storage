@@ -102,13 +102,23 @@
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-image 
-                src="#markerImage" 
-                position="0.3 0.2 0.1" 
-                width="0.15" height="0.15"
-                material="shader: flat;"
-                animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
-            </a-image>
+            <!-- Top-right marker (existing) -->
+                <a-image 
+                    src="#markerImage" 
+                    position="0.3 0.2 0.1" 
+                    width="0.15" height="0.15"
+                    material="shader: flat;"
+                    animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
+                </a-image>
+
+                <!-- Middle-left marker (new) -->
+                <a-image 
+                    src="#markerImage"
+                    position="-0.3 0.0 0.1"
+                    width="0.15" height="0.15"
+                    material="shader: flat;"
+                    animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
+                </a-image>
         </a-entity>
 
         <a-entity id="subTarget" mindar-image-target="targetIndex: 1"></a-entity>
